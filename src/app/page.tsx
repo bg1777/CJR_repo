@@ -1,113 +1,131 @@
-import Image from "next/image";
+'use client'
+import React, { useState, useMemo, useEffect } from "react";
+import "@/app/globals.css";
 
 export default function Home() {
+  const [tasks, setTasks] = useState([]);
+  const [taskInput, setTaskInput] = useState("");
+  const [activeFilter, setActiveFilter] = useState("Tudo");
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    if (showPopup) {
+      timer = setTimeout(() => {
+        setShowPopup(false);
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [showPopup]);
+
+  const handleAddTask = () => {
+    if (taskInput.trim() !== "") {
+      setTasks([...tasks, { title: taskInput.trim(), isdone: false }]);
+      setTaskInput("");
+      setShowPopup(true);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleAddTask();
+    }
+  };
+
+  const handleToggleAllTasks = () => {
+    const updatedTasks = tasks.map(task => ({ ...task, isdone: true }));
+    setTasks(updatedTasks);
+  };
+
+  const handleFilterClick = (filter) => {
+    setActiveFilter(filter);
+  };
+
+  const filteredTasks = useMemo(() => {
+    switch (activeFilter) {
+      case "Ativas":
+        return tasks.filter((task) => !task.isdone);
+      case "Completas":
+        return tasks.filter((task) => task.isdone);
+      default:
+        return tasks;
+    }
+  }, [tasks, activeFilter]);
+
+  const remainingTasksCount = useMemo(() => {
+    return tasks.filter((task) => !task.isdone).length;
+  }, [tasks]);
+
+  const completedTasksCount = useMemo(() => {
+    return tasks.filter((task) => task.isdone).length;
+  }, [tasks]);
+  
+  const totalTasksCount = tasks.length;
+  const progressPercentage = totalTasksCount === 0 ? 0 : (completedTasksCount / totalTasksCount) * 100;
+
+  const remainingTasksText = remainingTasksCount === 1 ? "item restante" : "itens restantes";
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="w-screen h-screen flex justify-center items-center bg-[#fefefe] overflow-auto">
+      <div className="w-[28.8125rem] flex flex-col items-center">
+        {showPopup && (
+          <div className=" absolute top-[10%] border-[0.125rem] border-[#de6c5c] w-fit p-[0.5rem] rounded-[0.5rem] mb-[1rem]">
+            <span className="text-[#de6c5c]">✓ Nova tarefa adicionada</span>
+            <button className="ml-[0.5rem] text-[#de6c5c] font-bold" onClick={() => setShowPopup(false)}>X</button>
+          </div>
+        )}
+        <div className="h-[3.5rem] flex items-center m-[0.5rem]">
+          <p className="flex items-center justify-center-[13.0625rem] text-[3rem] text-[#de6c5c]">PraFazê!</p>
+          <div className="w-[3.5rem] h-[3.5rem] flex items-center justify-center">
+            <img className="h-[3rem]" src="./reallogo.svg" alt="Logo"/>
+          </div>
+        </div>
+        <div className="min-h-[35rem] w-[28.8125rem] border-[#de6c5c] border-[0.0625rem] rounded-[0.75rem] pt-[0.75rem] pr-[0.75rem] pl-[0.75rem] flex flex-col justify-between">
+          <div className="flex justify-between">
+            <div className="border-[0.125rem] w-[20.4375] h-[3rem] border-[#de6c5c] flex items-center p-[0.5rem] rounded-[0.5rem] justify-between shadow">
+              <input className="w-[16.4375rem] h-[1.5rem] outline-none text-[#de6c5c] placeholder-[#de6c5c] bg=[#fefefe]" type="text" placeholder="Sou uma tarefa :)" value={taskInput} onChange={(e) => setTaskInput(e.target.value)} onKeyPress={handleKeyPress}/>
+              <button type="button" className="rounded-[0.5rem] w-[2rem] h-[2rem] border-[0.0625rem] border-[#de6c5c] text-[#de6c5c] text-fill overflow-hidden whitespace-nowrap text-[0.65rem] flex items-center justify-center shadow" onClick={handleAddTask}>Add</button>
+            </div>
+            <button className="w-[5.375rem] bg-[#de6c5c] text-[#fefefe] rounded-[0.5rem] text-fill shadow" onClick={handleToggleAllTasks}>Feito!</button>
+          </div>
+          <div className="mt-[0.5rem] h-[0.5rem] w-[27.3125rem] border-[#de6c5c] border-[0.0625rem] rounded-[0.25rem] shadow">
+            <div className="h-full bg-[#de6c5c] rounded-[0.25rem]" style={{ width: `${progressPercentage}%`}}></div>
+          </div>
+          <div id="task box" className="w-[27.3125rem] h-[27.5rem] overflow-y-auto scrollbar-thin scrollbar-track-transparent">
+            <div className="mt-[0.5rem] mb-[0.5rem] flex flex-col">
+              {tasks.length === 0 ? (
+                <div className="text-[#de6c5c] max-w-[27.3125rem] min-h-[26rem] flex items-center justify-center">
+                  <p className="tex-center items-center">Todas as tarefas foram feitas :D</p>
+                </div>
+              ) : (
+                filteredTasks.map((task, index) => (
+                  <div key={index} className="text-[#de6c5c] flex items-center overflow-hidden">
+                    <input className="mr-[0.5rem] h-[1rem] w-[1rem] accent-[#de6c5c]" type="checkbox" checked={task.isdone} onChange={() => {
+                      const updatedTasks = [...tasks];
+                      updatedTasks[index].isdone = !updatedTasks[index].isdone;
+                      setTasks(updatedTasks);
+                    }}/>
+                    <div className="w-[27.3125rem] text-ellipsis overflow-hiden">
+                      <p className={` ${task.isdone ? "line-through" : ""} text-ellipsis overflow-hidden`}>{task.title}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          <div className="flex justify-between items-center border-t-[0.0625rem] border-t-[#de6c5c] h-[3rem]">
+            <div className="w-[6rem] h-[1.125rem] flex items-center">
+              <p className="text-[0.75rem] text-[#de6c5c] whitespace-nowrap">{remainingTasksCount} {remainingTasksText}</p>
+            </div>
+            <div className="text-[0.75rem] w-[10rem] flex justify-between text-[#de6c5c]">
+              <button className={`text-sm ${activeFilter === "Tudo" ? "font-bold" : ""}`} onClick={() => handleFilterClick("Tudo")}>Tudo</button>
+              <button className={`text-sm ${activeFilter === "Ativas" ? "font-bold" : ""}`} onClick={() => handleFilterClick("Ativas")}>Ativas</button>
+              <button className={`text-sm ${activeFilter === "Completas" ? "font-bold" : ""}`} onClick={() => handleFilterClick("Completas")}>Completas</button>
+            </div>
+            <button className="text-[0.75rem] text-[#de6c5c]" onClick={() => setTasks(tasks.filter(task => !task.isdone))}>Limpar Completas</button>
+          </div>
         </div>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
