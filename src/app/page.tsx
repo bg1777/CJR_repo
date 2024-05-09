@@ -1,15 +1,20 @@
 'use client'
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, ChangeEvent, KeyboardEvent } from "react";
 import "@/app/globals.css";
 
-export default function Home() {
-  const [tasks, setTasks] = useState([]);
-  const [taskInput, setTaskInput] = useState("");
-  const [activeFilter, setActiveFilter] = useState("Tudo");
-  const [showPopup, setShowPopup] = useState(false);
+interface Task {
+  title: string;
+  isdone: boolean;
+}
+
+export default function Home(): JSX.Element {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskInput, setTaskInput] = useState<string>("");
+  const [activeFilter, setActiveFilter] = useState<string>("Tudo");
+  const [showPopup, setShowPopup] = useState<boolean>(false);
 
   useEffect(() => {
-    let timer;
+    let timer: NodeJS.Timeout;
     if (showPopup) {
       timer = setTimeout(() => {
         setShowPopup(false);
@@ -18,7 +23,7 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [showPopup]);
 
-  const handleAddTask = () => {
+  const handleAddTask = (): void => {
     if (taskInput.trim() !== "") {
       setTasks([...tasks, { title: taskInput.trim(), isdone: false }]);
       setTaskInput("");
@@ -26,18 +31,18 @@ export default function Home() {
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       handleAddTask();
     }
   };
 
-  const handleToggleAllTasks = () => {
-    const updatedTasks = tasks.map(task => ({ ...task, isdone: true }));
+  const handleToggleAllTasks = (): void => {
+    const updatedTasks = tasks.map((task) => ({ ...task, isdone: true }));
     setTasks(updatedTasks);
   };
 
-  const handleFilterClick = (filter) => {
+  const handleFilterClick = (filter: string): void => {
     setActiveFilter(filter);
   };
 
@@ -60,16 +65,16 @@ export default function Home() {
     return tasks.filter((task) => task.isdone).length;
   }, [tasks]);
   
-  const totalTasksCount = tasks.length;
-  const progressPercentage = totalTasksCount === 0 ? 0 : (completedTasksCount / totalTasksCount) * 100;
+  const totalTasksCount: number = tasks.length;
+  const progressPercentage: number = totalTasksCount === 0 ? 0 : (completedTasksCount / totalTasksCount) * 100;
 
-  const remainingTasksText = remainingTasksCount === 1 ? "item restante" : "itens restantes";
+  const remainingTasksText: string = remainingTasksCount === 1 ? "item restante" : "itens restantes";
 
   return (
     <div className="w-screen h-screen flex justify-center items-center bg-[#fefefe] overflow-auto">
       <div className="w-[28.8125rem] flex flex-col items-center">
         {showPopup && (
-          <div className=" absolute top-[10%] border-[0.125rem] border-[#de6c5c] w-fit p-[0.5rem] rounded-[0.5rem] mb-[1rem]">
+          <div className="absolute top-[10%] border-[0.125rem] border-[#de6c5c] w-fit p-[0.5rem] rounded-[0.5rem] mb-[1rem]">
             <span className="text-[#de6c5c]">✓ Nova tarefa adicionada</span>
             <button className="ml-[0.5rem] text-[#de6c5c] font-bold" onClick={() => setShowPopup(false)}>X</button>
           </div>
@@ -83,7 +88,7 @@ export default function Home() {
         <div className="min-h-[35rem] w-[28.8125rem] border-[#de6c5c] border-[0.0625rem] rounded-[0.75rem] pt-[0.75rem] pr-[0.75rem] pl-[0.75rem] flex flex-col justify-between">
           <div className="flex justify-between">
             <div className="border-[0.125rem] w-[20.4375] h-[3rem] border-[#de6c5c] flex items-center p-[0.5rem] rounded-[0.5rem] justify-between shadow">
-              <input className="w-[16.4375rem] h-[1.5rem] outline-none text-[#de6c5c] placeholder-[#de6c5c] bg=[#fefefe]" type="text" placeholder="Sou uma tarefa :)" value={taskInput} onChange={(e) => setTaskInput(e.target.value)} onKeyPress={handleKeyPress}/>
+              <input className="w-[16.4375rem] h-[1.5rem] outline-none text-[#de6c5c] placeholder-[#de6c5c] bg=[#fefefe]" type="text" placeholder="Sou uma tarefa :)" value={taskInput} onChange={(e: ChangeEvent<HTMLInputElement>) => setTaskInput(e.target.value)} onKeyPress={handleKeyPress}/>
               <button type="button" className="rounded-[0.5rem] w-[2rem] h-[2rem] border-[0.0625rem] border-[#de6c5c] text-[#de6c5c] text-fill overflow-hidden whitespace-nowrap text-[0.65rem] flex items-center justify-center shadow" onClick={handleAddTask}>Add</button>
             </div>
             <button className="w-[5.375rem] bg-[#de6c5c] text-[#fefefe] rounded-[0.5rem] text-fill shadow" onClick={handleToggleAllTasks}>Feito!</button>
